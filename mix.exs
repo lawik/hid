@@ -13,7 +13,7 @@ defmodule HID.Mixfile do
 
   def project do
     [app: :hid,
-     version: "0.2",
+     version: "0.2.0",
      elixir: "~> 1.3",
      name: "hid",
      source_url: "http://git.sferosoft.ru/opensource/hid",
