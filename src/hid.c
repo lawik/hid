@@ -162,7 +162,6 @@ static ERL_NIF_TERM open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
   }
 
   if (!handle) return make_error(env, ctx->error_open, NULL);
-  if (hid_set_nonblocking(handle, 1) != 0) return make_error(env, ctx->error_open, handle);
 
   device *dev = (device *)enif_alloc_resource(ctx->device, sizeof(device));
   if (!dev) return enif_raise_exception(env, ctx->error_open);
@@ -203,8 +202,6 @@ static ERL_NIF_TERM write(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
   } else {
     return enif_make_badarg(env);
   }
-  //printf("length: %u\n");
-
   //int bytes = hid_write(dev->handle, buf, len + 1);
   int bytes = hid_write(dev->handle, buf, len);
   enif_free(buf);
@@ -260,7 +257,7 @@ static ERL_NIF_TERM read(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
   if (len <= 0) return enif_make_tuple2(env, ctx->ok, enif_make_list(env, 0));
 
   buf = enif_alloc(len);
-  int bytes = hid_read(dev->handle, buf, len);
+  int bytes = hid_read_timeout(dev->handle, buf, len, -1);
   if (bytes <= 1) {
     enif_free(buf);
     if (bytes >= 0) {
@@ -323,7 +320,7 @@ static ErlNifFunc funcs[] = {
   {"nif_close", 1, close},
   {"nif_write", 2, write},
   {"nif_write_report", 2, write_report},
-  {"nif_read", 2, read},
+  {"nif_read", 2, read, ERL_NIF_DIRTY_JOB_IO_BOUND},
   {"nif_read_report", 3, read_report}
 };
 
